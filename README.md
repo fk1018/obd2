@@ -10,8 +10,7 @@ Clone the repository and install dependencies with:
 bundle install
 ```
 
-Prerequisites
--------------
+## Prerequisites
 - Ruby ≥ 3.0 (check with `ruby -v`)
 - Bundler (`gem install bundler`)
 
