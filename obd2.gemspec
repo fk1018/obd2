@@ -27,7 +27,7 @@ Gem::Specification.new do |spec|
   spec.metadata["changelog_uri"]     = "#{spec.homepage}/blob/main/CHANGELOG.md"
 
   # Files to be packaged with the gem
-  spec.files         = Dir["lib/**/*", "README.md", "LICENSE.txt", "CHANGELOG.md"]
+  spec.files         = Dir["lib/**/*", "README.md", "LICENSE.txt", "CHANGELOG.md", ".gitignore"]
   spec.require_paths = ["lib"]
 
   # Declare runtime dependencies.  The OBD2 gem depends on can_messenger
