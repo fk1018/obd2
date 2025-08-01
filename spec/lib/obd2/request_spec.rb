@@ -14,7 +14,7 @@ RSpec.describe Obd2::Request do
       expect(data[1]).to eq(0x01)     # service
       expect(data[2]).to eq(0x0C)     # PID
       # remaining bytes should be zero padded
-      expect(data[3..-1]).to all(eq(0))
+      expect(data[3..]).to all(eq(0))
     end
   end
 end

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'can_messenger'
-require_relative 'request'
-require_relative 'decoder'
+require "can_messenger"
+require_relative "request"
+require_relative "decoder"
 
 module Obd2
   # Provides a synchronous interface for requesting and decoding OBD‑II
@@ -21,10 +21,13 @@ module Obd2
     # @param can_fd [Boolean] Whether to enable CAN FD frames.
     # @param messenger [CanMessenger::Messenger, nil] Inject a pre‑constructed messenger (useful for tests).
     # @param decoder [Decoder, nil] Inject a custom decoder (useful for tests).
+    # rubocop:disable Metrics/ParameterLists
     def initialize(interface_name:, logger: nil, endianness: :big, can_fd: false, messenger: nil, decoder: nil)
-      @messenger = messenger || CanMessenger::Messenger.new(interface_name: interface_name, logger: logger, endianness: endianness, can_fd: can_fd)
+      @messenger = messenger || CanMessenger::Messenger.new(interface_name: interface_name, logger: logger,
+                                                            endianness: endianness, can_fd: can_fd)
       @decoder   = decoder   || Decoder.new
     end
+    # rubocop:enable Metrics/ParameterLists
 
     # Request a single PID and wait for the first matching response.  A
     # request frame is sent using {Request.build}.  Responses are
@@ -40,6 +43,7 @@ module Obd2
     # @param response_filter [Integer, Range, Array<Integer>] Which CAN IDs to listen for (defaults to 0x7E8..0x7EF).
     # @param timeout [Numeric] Maximum number of seconds to wait for a response.
     # @return [Hash, nil] Decoded response or nil if timed out or unknown PID.
+    # rubocop:disable Metrics/MethodLength
     def request_pid(service:, pid:, request_id: 0x7DF, response_filter: (0x7E8..0x7EF), timeout: 1.0)
       frame = Obd2::Request.build(service: service, pid: pid, can_id: request_id)
       @messenger.send_can_message(id: frame[:id], data: frame[:data])
@@ -49,16 +53,23 @@ module Obd2
       @messenger.start_listening(filter: response_filter) do |message|
         elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start
         break if elapsed > timeout
+
         # Each message is a hash with :id and :data; decode it
         decoded = @decoder.decode(message[:id], message[:data])
         next unless decoded
+
         result = decoded
         break
       end
       result
     ensure
       # Ensure we stop listening even if an exception occurs
-      @messenger.stop_listening rescue nil
+      begin
+        @messenger.stop_listening
+      rescue StandardError
+        nil
+      end
     end
+    # rubocop:enable Metrics/MethodLength
   end
 end

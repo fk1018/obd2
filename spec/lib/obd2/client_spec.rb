@@ -38,7 +38,8 @@ RSpec.describe Obd2::Client do
       allow(mock_messenger).to receive(:send_can_message)
 
       # start_listening yields a message for which decoder returns nil
-      allow(mock_messenger).to receive(:start_listening).and_yield({ id: 0x7E8, data: [3, 0x41, 0xFF, 0x00, 0, 0, 0, 0] })
+      allow(mock_messenger).to receive(:start_listening).and_yield({ id: 0x7E8,
+                                                                     data: [3, 0x41, 0xFF, 0x00, 0, 0, 0, 0] })
       allow(mock_messenger).to receive(:stop_listening)
       allow(mock_decoder).to receive(:decode).and_return(nil)
 
