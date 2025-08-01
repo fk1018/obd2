@@ -10,11 +10,18 @@ Clone the repository and install dependencies with:
 bundle install
 ```
 
-To build the gem locally and push it to RubyGems:
+Prerequisites
+-------------
+- Ruby ≥ 3.0 (check with `ruby -v`)
+- Bundler (`gem install bundler`)
+
+### Building & publishing (maintainers only)
+
+To build the gem locally and, if you are an authorised maintainer, push it to RubyGems:
 
 ```bash
 gem build obd2.gemspec
-gem push obd2-*.gem
+gem push obd2-*.gem  # requires RubyGems credentials
 ```
 
 ## Usage
@@ -22,7 +29,7 @@ gem push obd2-*.gem
 ```ruby
 require "obd2"
 
-client = Obd2::Client.new(interface_name: "can0")
+client = Obd2::Client.new(interface_name: "can0") # make sure `can0` exists (e.g. SocketCAN)
 result = client.request_pid(service: 0x01, pid: 0x0C)
 puts result.inspect
 ```
