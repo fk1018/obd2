@@ -13,7 +13,7 @@ module Obd2
   #   Obd2::PIDS::REGISTRY[[0x01, 0x42]] = Obd2::PID.new(...)
   #
   module PIDS
-    extend self
+    module_function
 
     # A frozen hash mapping `(service, pid)` tuples to {PID} objects.
     REGISTRY = {
