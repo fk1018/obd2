@@ -36,6 +36,7 @@ Gem::Specification.new do |spec|
   # Development dependencies for running the test suite
   spec.add_development_dependency "rspec", "~> 3.12"
   spec.add_development_dependency "simplecov", "~> 0.22"
+  spec.add_development_dependency "rubocop", "~> 1.59"
 
   # Enforce MFA for publishing
   spec.metadata["rubygems_mfa_required"] = "true"
