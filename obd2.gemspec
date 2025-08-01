@@ -27,13 +27,15 @@ Gem::Specification.new do |spec|
   spec.metadata["changelog_uri"]     = "#{spec.homepage}/blob/main/CHANGELOG.md"
 
   # Files to be packaged with the gem
-  spec.files         = Dir["lib/**/*", "README.md"]
-  spec.bindir        = "exe"
-  spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
+  spec.files         = Dir["lib/**/*", "README.md", "LICENSE.txt", "CHANGELOG.md"]
   spec.require_paths = ["lib"]
 
   # Declare runtime dependencies.  The OBD2 gem depends on can_messenger
   spec.add_dependency "can_messenger", "~> 1.0"
+
+  # Development dependencies for running the test suite
+  spec.add_development_dependency "rspec", "~> 3.12"
+  spec.add_development_dependency "simplecov", "~> 0.22"
 
   # Enforce MFA for publishing
   spec.metadata["rubygems_mfa_required"] = "true"
