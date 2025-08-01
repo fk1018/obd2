@@ -30,6 +30,7 @@ module Obd2
     # @param bytes [Integer] How many data bytes are expected in the response.
     # @param formula [Proc] A lambda that knows how to convert the response bytes into a value.
     # @param unit [String, nil] Optional unit of measure for the decoded value.
+    # rubocop:disable Metrics/ParameterLists
     def initialize(service:, pid:, name:, description:, bytes:, formula:, unit: nil)
       @service     = Integer(service)
       @pid         = Integer(pid)
@@ -39,6 +40,7 @@ module Obd2
       @formula     = formula
       @unit        = unit
     end
+    # rubocop:enable Metrics/ParameterLists
 
     # Decode the PID value from an array of response bytes.
     #
@@ -53,6 +55,7 @@ module Obd2
     # @raise [ArgumentError] If too few bytes are provided.
     def decode(data)
       raise ArgumentError, "Data length mismatch: expected #{@bytes} bytes, got #{data.length}" if data.length < @bytes
+
       # Pass only the bytes we need to the formula; extra bytes are ignored.
       @formula.call(*data.first(@bytes))
     end

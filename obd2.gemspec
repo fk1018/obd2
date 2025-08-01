@@ -33,11 +33,6 @@ Gem::Specification.new do |spec|
   # Declare runtime dependencies.  The OBD2 gem depends on can_messenger
   spec.add_dependency "can_messenger", "~> 1.0"
 
-  # Development dependencies for running the test suite
-  spec.add_development_dependency "rspec", "~> 3.12"
-  spec.add_development_dependency "simplecov", "~> 0.22"
-  spec.add_development_dependency "rubocop", "~> 1.59"
-
   # Enforce MFA for publishing
   spec.metadata["rubygems_mfa_required"] = "true"
 end
