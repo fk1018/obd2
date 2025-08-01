@@ -1,0 +1,19 @@
+# Ignore bundler config
+.bundle/
+
+# Ignore test coverage reports
+coverage/
+
+# Ignore packaged gems and build artifacts
+pkg/
+*.gem
+
+# Ignore log files
+log/
+
+# Ignore yard documentation
+.yardoc/
+
+# Ignore temporary files
+*.swp
+.DS_Store
