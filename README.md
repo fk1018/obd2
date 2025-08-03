@@ -31,10 +31,22 @@ bundle install
 - Bundler (`gem install bundler`)
 - A working SocketCAN interface (e.g. `can0`). See the [official SocketCAN setup instructions](https://www.kernel.org/doc/html/latest/networking/can.html). To create a virtual interface for testing:
 
-  ```bash
-  sudo ip link add dev can0 type vcan
-  sudo ip link set can0 up
-  ```
++  ```bash
++  # Load the virtual-CAN kernel module (needed once per boot)
++  sudo modprobe vcan
++
++  # Create and bring up a virtual CAN interface called vcan0
++  sudo ip link add dev vcan0 type vcan
++  sudo ip link set vcan0 up
++  ```
+
+or
+
+-  ```bash
+-  sudo ip link add dev can0 type vcan
+-  sudo ip link set can0 up
+-  ```
+
 - The `can_messenger` gem (installed automatically as a dependency)
 
 ### Building & publishing (maintainers only)
