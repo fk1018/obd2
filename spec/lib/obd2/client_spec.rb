@@ -45,5 +45,22 @@ RSpec.describe Obd2::Client do
 
       expect(client.request_pid(service: 0x01, pid: 0xFF)).to be_nil
     end
+
+    it "returns nil after timeout when no messages are received" do
+      allow(Obd2::Request).to receive(:build).and_return({ id: 0x7DF, data: Array.new(8, 0) })
+      allow(mock_messenger).to receive(:send_can_message)
+
+      # Simulate start_listening blocking without yielding any messages
+      allow(mock_messenger).to receive(:start_listening) { sleep 0.2 }
+      allow(mock_messenger).to receive(:stop_listening)
+      allow(mock_decoder).to receive(:decode).and_return(nil)
+
+      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      result = client.request_pid(service: 0x01, pid: 0x0C, timeout: 0.1)
+      elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
+
+      expect(result).to be_nil
+      expect(elapsed).to be >= 0.1
+    end
   end
 end
