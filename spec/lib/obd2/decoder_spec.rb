@@ -31,5 +31,20 @@ RSpec.describe Obd2::Decoder do
     it "raises an error when data length is insufficient" do
       expect { decoder.decode(0x7E8, [1, 2]) }.to raise_error(ArgumentError)
     end
+
+    it "raises an error when response service is below 0x40" do
+      data = [4, 0x01, 0x0C, 0x00, 0x00, 0, 0, 0]
+      expect { decoder.decode(0x7E8, data) }.to raise_error(ArgumentError)
+    end
+
+    it "raises an error when payload length does not match PID expectation" do
+      data = [5, 0x41, 0x0C, 0x00, 0x00, 0, 0, 0]
+      expect { decoder.decode(0x7E8, data) }.to raise_error(ArgumentError)
+    end
+
+    it "raises an error when not enough data bytes follow" do
+      data = [4, 0x41, 0x0C, 0x00]
+      expect { decoder.decode(0x7E8, data) }.to raise_error(ArgumentError)
+    end
   end
 end

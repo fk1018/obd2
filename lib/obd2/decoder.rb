@@ -17,21 +17,29 @@ module Obd2
     # @param data [Array<Integer>] Eight data bytes from the CAN frame.
     # @return [Hash, nil] Parsed response or nil if PID not found.
     # @raise [ArgumentError] If fewer than three bytes of data are supplied.
-    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def decode(can_id, data)
       raise ArgumentError, "Data must contain at least 3 bytes" if data.length < 3
 
-      _length    = data[0]
+      frame_len  = data[0]
       resp_svc   = data[1]
       resp_pid   = data[2]
       # According to the OBD‑II spec, response service = request service + 0x40.
+      raise ArgumentError, "Response service must be >= 0x40" if resp_svc < 0x40
+
       service    = resp_svc - 0x40
       pid_def    = Obd2::PIDS.find(service, resp_pid)
       return nil unless pid_def
 
+      expected_len = 2 + pid_def.bytes
+      raise ArgumentError, "Payload length mismatch" if frame_len != expected_len
+      raise ArgumentError, "Frame too short for PID" if data.length < expected_len + 1
+
       # Extract the number of bytes the PID expects starting at byte 3.
-      bytes      = data[3, pid_def.bytes]
-      value      = pid_def.decode(bytes)
+      bytes = data[3, pid_def.bytes]
+      raise ArgumentError, "Not enough data bytes" if bytes.length != pid_def.bytes
+
+      value = pid_def.decode(bytes)
       {
         can_id: can_id,
         service: service,
@@ -41,6 +49,6 @@ module Obd2
         pid_def: pid_def
       }
     end
-    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
   end
 end
