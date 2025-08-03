@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
 
   # Files to be packaged with the gem
   spec.files = `git ls-files -z`.split("\x0").reject do |f|
-    f.start_with?("spec/", ".git", ".rubocop", ".coderabbit") || f == "Gemfile.lock"
+    f.start_with?("spec/", ".git", ".rubocop", ".coderabbit") || f == "Gemfile.lock" || f == ".gitignore"
   end
   spec.require_paths = ["lib"]
 
