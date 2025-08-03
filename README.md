@@ -30,21 +30,16 @@ bundle install
 
 - Ruby ≥ 3.0 (check with `ruby -v`)
 - Bundler (`gem install bundler`)
-- A working SocketCAN interface (e.g. `can0`). See the [official SocketCAN setup instructions](https://www.kernel.org/doc/html/latest/networking/can.html). To create a virtual interface for testing:
+- A working SocketCAN interface (e.g. `vcan0`). See the [official SocketCAN setup instructions](https://www.kernel.org/doc/html/latest/networking/can.html). To create a virtual interface for testing:
 
-* ```bash
+```bash
+# Load the virtual-CAN kernel module (needed once per boot)
+sudo modprobe vcan
 
-  ```
-
-* # Load the virtual-CAN kernel module (needed once per boot)
-* sudo modprobe vcan
-*
-* # Create and bring up a virtual CAN interface called vcan0
-* sudo ip link add dev vcan0 type vcan
-* sudo ip link set vcan0 up
-* ```
-
-  ```
+# Create and bring up a virtual CAN interface called vcan0
+sudo ip link add dev vcan0 type vcan
+sudo ip link set vcan0 up
+```
 
 - The `can_messenger` gem (installed automatically as a dependency)
 
@@ -62,7 +57,7 @@ gem push obd2-*.gem  # requires RubyGems credentials
 ```ruby
 require "obd2"
 
-client = Obd2::Client.new(interface_name: "can0") # make sure `can0` exists (e.g. SocketCAN)
+client = Obd2::Client.new(interface_name: "vcan0") # make sure `vcan0` exists (e.g. SocketCAN)
 result = client.request_pid(service: 0x01, pid: 0x0C)
 puts result.inspect
 ```
