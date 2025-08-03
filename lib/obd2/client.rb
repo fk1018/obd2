@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "can_messenger"
+require "timeout"
 require_relative "request"
 require_relative "decoder"
 
@@ -48,27 +49,29 @@ module Obd2
       frame = Obd2::Request.build(service: service, pid: pid, can_id: request_id)
       @messenger.send_can_message(id: frame[:id], data: frame[:data])
       result = nil
-      start  = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-      @messenger.start_listening(filter: response_filter) do |message|
-        elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start
-        break if elapsed > timeout
+      begin
+        Timeout.timeout(timeout) do
+          @messenger.start_listening(filter: response_filter) do |message|
+            # Each message is a hash with :id and :data; decode it
+            decoded = @decoder.decode(message[:id], message[:data])
+            next unless decoded
 
-        # Each message is a hash with :id and :data; decode it
-        decoded = @decoder.decode(message[:id], message[:data])
-        next unless decoded
-
-        result = decoded
-        break
+            result = decoded
+            break
+          end
+        end
+      rescue Timeout::Error
+        result = nil
+      ensure
+        # Ensure we stop listening even if an exception occurs
+        begin
+          @messenger.stop_listening
+        rescue StandardError
+          nil
+        end
       end
       result
-    ensure
-      # Ensure we stop listening even if an exception occurs
-      begin
-        @messenger.stop_listening
-      rescue StandardError
-        nil
-      end
     end
     # rubocop:enable Metrics/MethodLength
   end

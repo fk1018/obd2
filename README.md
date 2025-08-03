@@ -51,14 +51,34 @@ result = client.request_pid(service: 0x01, pid: 0x0C)
 puts result.inspect
 ```
 
-Only single-frame PID requests are currently supported.
+Only single-frame PID requests are currently supported. `request_pid` returns
+`nil` if no response is received before the timeout (default 1 second) and will
+block until either a response is decoded or the timeout expires.
+
+## Custom PIDs
+
+Additional PIDs can be registered at runtime by adding entries to
+`Obd2::PIDS::REGISTRY`:
+
+```ruby
+Obd2::PIDS::REGISTRY[[0x01, 0x42]] = Obd2::PID.new(
+  service: 0x01,
+  pid: 0x42,
+  name: "Control Module Voltage",
+  description: "Control module voltage",
+  bytes: 2,
+  unit: "V",
+  formula: ->(a, b) { ((a << 8) | b) / 1000.0 }
+)
+```
 
 ## Running Tests
 
-Execute the test suite with:
+Execute the test suite and rubocop with:
 
 ```bash
 bundle exec rspec
+bundle exec rubocop -a
 ```
 
 ## License
