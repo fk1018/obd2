@@ -55,6 +55,24 @@ Only single-frame PID requests are currently supported. `request_pid` returns
 `nil` if no response is received before the timeout (default 1 second) and will
 block until either a response is decoded or the timeout expires.
 
+The method also accepts optional parameters:
+
+* `request_id` – CAN identifier used for the request (default `0x7DF`).
+* `response_filter` – CAN IDs to listen for in responses (default `0x7E8..0x7EF`).
+* `timeout` – Seconds to wait for a response (default `1.0`).
+
+For example:
+
+```ruby
+result = client.request_pid(
+  service: 0x01,
+  pid: 0x0C,
+  request_id: 0x7E0,
+  response_filter: 0x7E8,
+  timeout: 2.0
+)
+```
+
 ## Custom PIDs
 
 Additional PIDs can be registered at runtime by adding entries to
