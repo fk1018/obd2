@@ -62,5 +62,36 @@ RSpec.describe Obd2::Client do
       expect(result).to be_nil
       expect(elapsed).to be >= 0.1
     end
+
+    it "ignores malformed frames and continues listening" do
+      request_frame = { id: 0x7DF, data: Array.new(8, 0) }
+      expect(Obd2::Request).to receive(:build).with(service: 0x01, pid: 0x0C, can_id: 0x7DF).and_return(request_frame)
+      expect(mock_messenger).to receive(:send_can_message).with(id: request_frame[:id], data: request_frame[:data])
+
+      malformed = { id: 0x7E8, data: [1, 2, 3, 4, 5, 6, 7, 8] }
+      valid     = { id: 0x7E8, data: [4, 0x41, 0x0C, 0x0B, 0xB8, 0, 0, 0] }
+      allow(mock_messenger).to receive(:start_listening).and_yield(malformed).and_yield(valid)
+      allow(mock_messenger).to receive(:stop_listening)
+
+      expect(mock_decoder).to receive(:decode).with(malformed[:id], malformed[:data]).and_raise(ArgumentError)
+      decoded = { service: 0x01, pid: 0x0C, value: 3000, unit: "rpm", pid_def: nil }
+      expect(mock_decoder).to receive(:decode).with(valid[:id], valid[:data]).and_return(decoded)
+
+      result = client.request_pid(service: 0x01, pid: 0x0C)
+      expect(result).to eq(decoded)
+    end
+
+    it "returns nil when all frames are malformed" do
+      allow(Obd2::Request).to receive(:build).and_return({ id: 0x7DF, data: Array.new(8, 0) })
+      allow(mock_messenger).to receive(:send_can_message)
+
+      malformed = { id: 0x7E8, data: [1, 2, 3, 4, 5, 6, 7, 8] }
+      allow(mock_messenger).to receive(:start_listening).and_yield(malformed)
+      allow(mock_messenger).to receive(:stop_listening)
+
+      expect(mock_decoder).to receive(:decode).with(malformed[:id], malformed[:data]).and_raise(ArgumentError)
+
+      expect(client.request_pid(service: 0x01, pid: 0x0C)).to be_nil
+    end
   end
 end
