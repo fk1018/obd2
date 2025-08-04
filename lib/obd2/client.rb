@@ -54,7 +54,11 @@ module Obd2
         Timeout.timeout(timeout) do
           @messenger.start_listening(filter: response_filter) do |message|
             # Each message is a hash with :id and :data; decode it
-            decoded = @decoder.decode(message[:id], message[:data])
+            begin
+              decoded = @decoder.decode(message[:id], message[:data])
+            rescue ArgumentError
+              next
+            end
             next unless decoded
 
             result = decoded
