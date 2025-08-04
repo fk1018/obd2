@@ -44,26 +44,32 @@ module Obd2
     # @param response_filter [Integer, Range, Array<Integer>] Which CAN IDs to listen for (defaults to 0x7E8..0x7EF).
     # @param timeout [Numeric] Maximum number of seconds to wait for a response.
     # @return [Hash, nil] Decoded response or nil if timed out or unknown PID.
-    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def request_pid(service:, pid:, request_id: 0x7DF, response_filter: (0x7E8..0x7EF), timeout: 1.0)
       frame = Obd2::Request.build(service: service, pid: pid, can_id: request_id)
-      @messenger.send_can_message(id: frame[:id], data: frame[:data])
       result = nil
+      listener = nil
 
       begin
         Timeout.timeout(timeout) do
-          @messenger.start_listening(filter: response_filter) do |message|
-            # Each message is a hash with :id and :data; decode it
-            begin
-              decoded = @decoder.decode(message[:id], message[:data])
-            rescue ArgumentError
-              next
-            end
-            next unless decoded
+          listener = Thread.new do
+            @messenger.start_listening(filter: response_filter) do |message|
+              # Each message is a hash with :id and :data; decode it
+              begin
+                decoded = @decoder.decode(message[:id], message[:data])
+              rescue ArgumentError
+                next
+              end
+              next unless decoded
 
-            result = decoded
-            break
+              result = decoded
+              @messenger.stop_listening
+            end
           end
+
+          sleep 0.01
+          @messenger.send_can_message(id: frame[:id], data: frame[:data])
+          listener.join
         end
       rescue Timeout::Error
         result = nil
@@ -74,9 +80,10 @@ module Obd2
         rescue StandardError
           nil
         end
+        listener&.kill
       end
       result
     end
-    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
   end
 end
