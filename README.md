@@ -86,8 +86,8 @@ result = client.request_pid(
 
 ## Custom PIDs
 
-Additional PIDs can be registered at runtime by adding entries to
-`Obd2::PIDS::REGISTRY`:
+`Obd2::PIDS::REGISTRY` is a mutable hash, so additional PIDs can be
+registered at runtime by adding entries:
 
 ```ruby
 Obd2::PIDS::REGISTRY[[0x01, 0x42]] = Obd2::PID.new(

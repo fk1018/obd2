@@ -14,5 +14,24 @@ RSpec.describe Obd2::PIDS do
       expect(pid.name).to eq("Engine RPM")
       expect(pid.unit).to eq("rpm")
     end
+
+    it "allows registering additional PID definitions" do
+      custom_pid = Obd2::PID.new(
+        service: 0x01,
+        pid: 0x42,
+        name: "Control Module Voltage",
+        description: "Control module voltage",
+        bytes: 2,
+        unit: "V",
+        formula: ->(a, b) { ((a << 8) | b) / 1000.0 }
+      )
+
+      begin
+        described_class::REGISTRY[[0x01, 0x42]] = custom_pid
+        expect(described_class.find(0x01, 0x42)).to be(custom_pid)
+      ensure
+        described_class::REGISTRY.delete([0x01, 0x42])
+      end
+    end
   end
 end
