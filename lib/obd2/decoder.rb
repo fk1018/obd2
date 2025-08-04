@@ -17,11 +17,14 @@ module Obd2
     # @param data [Array<Integer>] Eight data bytes from the CAN frame.
     # @return [Hash, nil] Parsed response or nil if PID not found.
     # @raise [ArgumentError] If fewer than three bytes of data are supplied.
-    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
     def decode(can_id, data)
       raise ArgumentError, "Data must contain at least 3 bytes" if data.length < 3
 
-      frame_len  = data[0]
+      pci = data[0]
+      raise ArgumentError, "Unsupported PCI frame type" unless (pci >> 4).zero?
+
+      frame_len  = pci & 0x0F
       resp_svc   = data[1]
       resp_pid   = data[2]
       # According to the OBD‑II spec, response service = request service + 0x40.
@@ -49,6 +52,6 @@ module Obd2
         pid_def: pid_def
       }
     end
-    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
   end
 end

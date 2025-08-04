@@ -47,4 +47,19 @@ RSpec.describe Obd2::Decoder do
       expect { decoder.decode(0x7E8, data) }.to raise_error(ArgumentError)
     end
   end
+
+  context "with PCI values" do
+    it "accepts single-frame PCI values" do
+      speed = 50
+      data  = [0x03, 0x41, 0x0D, speed, 0, 0, 0, 0]
+      result = decoder.decode(0x7E8, data)
+      expect(result).not_to be_nil
+      expect(result[:value]).to eq(speed)
+    end
+
+    it "raises an error for non single-frame PCI values" do
+      data = [0x10, 0x41, 0x0D, 0x00, 0, 0, 0, 0]
+      expect { decoder.decode(0x7E8, data) }.to raise_error(ArgumentError)
+    end
+  end
 end
