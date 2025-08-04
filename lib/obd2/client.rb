@@ -67,7 +67,9 @@ module Obd2
             end
           end
 
-          sleep 0.01
+          # Yield to the listener thread so it can begin processing before
+          # sending the request frame.
+          Thread.pass
           @messenger.send_can_message(id: frame[:id], data: frame[:data])
           listener.join
         end
