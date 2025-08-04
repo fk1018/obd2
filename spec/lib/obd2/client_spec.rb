@@ -18,11 +18,12 @@ RSpec.describe Obd2::Client do
       # Expected frame from Request.build
       request_frame = { id: 0x7DF, data: Array.new(8, 0) }
       expect(Obd2::Request).to receive(:build).with(service: 0x01, pid: 0x0C, can_id: 0x7DF).and_return(request_frame)
-      expect(mock_messenger).to receive(:send_can_message).with(id: request_frame[:id], data: request_frame[:data])
 
-      # Simulate start_listening yielding a single message
+      # Ensure listener starts before request is sent
       message = { id: 0x7E8, data: [4, 0x41, 0x0C, 0x0B, 0xB8, 0, 0, 0] } # corresponds to 3000 rpm
-      allow(mock_messenger).to receive(:start_listening).and_yield(message)
+      expect(mock_messenger).to receive(:start_listening).ordered.and_yield(message)
+      expect(mock_messenger).to receive(:send_can_message).ordered.with(id: request_frame[:id],
+                                                                        data: request_frame[:data])
       allow(mock_messenger).to receive(:stop_listening)
 
       decoded = { service: 0x01, pid: 0x0C, value: 3000, unit: "rpm", pid_def: nil }
@@ -66,11 +67,12 @@ RSpec.describe Obd2::Client do
     it "ignores malformed frames and continues listening" do
       request_frame = { id: 0x7DF, data: Array.new(8, 0) }
       expect(Obd2::Request).to receive(:build).with(service: 0x01, pid: 0x0C, can_id: 0x7DF).and_return(request_frame)
-      expect(mock_messenger).to receive(:send_can_message).with(id: request_frame[:id], data: request_frame[:data])
 
       malformed = { id: 0x7E8, data: [1, 2, 3, 4, 5, 6, 7, 8] }
       valid     = { id: 0x7E8, data: [4, 0x41, 0x0C, 0x0B, 0xB8, 0, 0, 0] }
-      allow(mock_messenger).to receive(:start_listening).and_yield(malformed).and_yield(valid)
+      expect(mock_messenger).to receive(:start_listening).ordered.and_yield(malformed).and_yield(valid)
+      expect(mock_messenger).to receive(:send_can_message).ordered.with(id: request_frame[:id],
+                                                                        data: request_frame[:data])
       allow(mock_messenger).to receive(:stop_listening)
 
       expect(mock_decoder).to receive(:decode).with(malformed[:id], malformed[:data]).and_raise(ArgumentError)
