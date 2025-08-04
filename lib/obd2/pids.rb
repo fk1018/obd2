@@ -15,7 +15,10 @@ module Obd2
   module PIDS
     module_function
 
-    # A frozen hash mapping `(service, pid)` tuples to {PID} objects.
+    # A hash mapping `(service, pid)` tuples to {PID} objects. The
+    # registry is mutable so additional PIDs can be registered at
+    # runtime by assigning new entries.
+    # rubocop:disable Style/MutableConstant
     REGISTRY = {
       # Service 0x01 (Show current data)
       [0x01, 0x0C] => PID.new(
@@ -63,7 +66,8 @@ module Obd2
         unit: "%",
         formula: ->(a) { (a * 100.0) / 255.0 }
       )
-    }.freeze
+    }
+    # rubocop:enable Style/MutableConstant
 
     # Lookup a PID definition by its service and pid.  Returns nil if
     # no matching entry exists.
